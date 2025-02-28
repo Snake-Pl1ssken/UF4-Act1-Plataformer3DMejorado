@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : Entity
 {
     public static PlayerController instance;
 
@@ -16,8 +16,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float verticalSpeedOnGrounded = -5f;
     [SerializeField] float jumpVelocity = 10f;
     [Space]
-    [Header("Animation")]
-    [SerializeField] float animationSmoothingSpeed = 10f;
     [Space]
     [Header("InputActions")]
     [SerializeField] InputActionReference move;
@@ -34,33 +32,31 @@ public class PlayerController : MonoBehaviour
     [SerializeField] OrientationMode orientationMode = OrientationMode.ToMoveDirection;
     [SerializeField] Transform orientationTarget;
     [SerializeField] float angularSpeed = 720f;
-    Animator animator;
 
     CharacterController characterController;
 
     Camera mainCamera;
 
     HurtCollider hurtCollider;
+    Ragdollizer ragdollizer;
 
     HitCollider hitCollider;
-    Vector3 currentAnimationSpeed = Vector3.zero;
-    Vector3 desiredAnimationSpeed = Vector3.zero;
+
 
     float speed;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+        
         instance = this;
 
         characterController = GetComponent<CharacterController>();
         mainCamera = Camera.main;
-        animator = GetComponentInChildren<Animator>();
 
         hitCollider = GetComponentInChildren<HitCollider>();
-
         hurtCollider = GetComponent<HurtCollider>();
-
-        animator.keepAnimatorStateOnDisable = true;
+        ragdollizer = GetComponentInChildren<Ragdollizer>();
 
         speed = speedWalk;
     }
@@ -154,32 +150,6 @@ public class PlayerController : MonoBehaviour
         transform.rotation = rotationToApply * transform.rotation;
     }
 
-    void UpdateAnimation()
-    {
-        float speedMultiplier = speed == speedRun ? 2f : 1f;
-        desiredAnimationSpeed =
-            speedMultiplier *
-            transform.InverseTransformDirection(lastNormalizedVelocity);
-
-        Vector3 direction = desiredAnimationSpeed - currentAnimationSpeed;
-        float distance = direction.magnitude;
-        float smoothingStep = (animationSmoothingSpeed * Time.deltaTime);
-        float distanceToApply = Mathf.Min(distance, smoothingStep);
-        currentAnimationSpeed += direction.normalized * distanceToApply;
-
-        animator.SetFloat("SidewardVelocity", currentAnimationSpeed.x);
-        animator.SetFloat("ForwardVelocity", currentAnimationSpeed.z);
-        animator.SetBool("IsGrounded", characterController.isGrounded);
-
-        float clampedVerticalVelocity =
-            Mathf.Clamp(verticalVelocity, -jumpVelocity, jumpVelocity);
-        float verticalProgress = Mathf.InverseLerp(
-            jumpVelocity, -jumpVelocity, clampedVerticalVelocity
-            );
-        animator.SetFloat("VerticalProgress",
-            characterController.isGrounded ? 1f : verticalProgress);
-    }
-
     private void OnHitDelivered(HitCollider agressor, HurtCollider victim)
     {
         if (victim.CompareTag("Enemy"))
@@ -192,8 +162,16 @@ public class PlayerController : MonoBehaviour
     }
     private void OnHitRecived(HitCollider hitCollider, HurtCollider hurtCollider)
     {
-        gameObject.SetActive(false);
+        Debug.Log("Hit");
+        ragdollizer.RagDollizer();
+        Invoke(nameof(Deactivate), 2f);
         Invoke(nameof(Resurrect), 3f);
+    }
+
+    private void Deactivate()
+    {
+        gameObject.SetActive(false);
+        ragdollizer.DeRagdollizer();
     }
 
     void Resurrect()
@@ -234,5 +212,27 @@ public class PlayerController : MonoBehaviour
 
         hurtCollider.onHitRecived.RemoveListener(OnHitRecived);
         hitCollider.onHitDelivered.RemoveListener(OnHitDelivered);
+    }
+
+    protected override float GetCurrentVerticalSpeed()
+    {
+        return verticalVelocity;
+    }
+    protected override float GetJumpSpeed()
+    {
+        return jumpVelocity;
+    }
+
+    protected override bool IsRunning()
+    { 
+        return speed == speedRun;
+    }
+    protected override bool IsGrounded()
+    {
+        return characterController.isGrounded;
+    }
+    protected override Vector3 GetLastNormalizedVelocity()
+    {
+        return lastNormalizedVelocity;
     }
 }

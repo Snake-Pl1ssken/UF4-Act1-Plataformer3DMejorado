@@ -2,7 +2,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Enemy : MonoBehaviour
+public class Enemy : Entity
 {
     [SerializeField] float wanderinfRadius = 5f;
     [SerializeField] float reachingDistance = 1.5f;
@@ -16,8 +16,9 @@ public class Enemy : MonoBehaviour
 
     HurtCollider hurtCollider;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         hurtCollider = GetComponent<HurtCollider>();
         
         agent = GetComponent<NavMeshAgent>();
@@ -46,6 +47,8 @@ public class Enemy : MonoBehaviour
             if (Vector3.Distance(transform.position, wanderPosition) < reachingDistance)
             { SelectWanderPosition(); }
         }
+
+        UpdateAnimation();
     }
 
     private void OnDisable()
@@ -67,5 +70,30 @@ public class Enemy : MonoBehaviour
         Vector2 positionXY = Random.insideUnitCircle * wanderinfRadius;
         Vector3 positionXZ = new Vector3(positionXY.x, 0f, positionXY.y);
         wanderPosition = homeOrigin + positionXZ;
+    }
+
+    protected override float GetCurrentVerticalSpeed()
+    {
+        return 0f;
+    }
+
+    protected override float GetJumpSpeed()
+    {
+        return 0f;
+    }
+
+    protected override bool IsRunning()
+    {
+        return false;
+    }
+
+    protected override bool IsGrounded()
+    {
+        return true;
+    }
+
+    protected override Vector3 GetLastNormalizedVelocity()
+    {
+        return agent.velocity.normalized;
     }
 }

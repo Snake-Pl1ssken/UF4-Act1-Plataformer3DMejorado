@@ -16,15 +16,15 @@ public class HitCollider : MonoBehaviour
 
     private void CheckCollider(Collider other)
     {
-        Debug.Log(other);
-        Debug.Log(other.tag);
+        //Debug.Log(other);
+        //Debug.Log(other.tag);
         if (hittableTags.Contains(other.tag))
         {
-            Debug.Log("hited");
+            //Debug.Log("hited");
             HurtCollider hurtCollider = other.GetComponent<HurtCollider>();
             if (hurtCollider)
             {
-                Debug.Log("Has hurtCollider");
+               // Debug.Log("Has hurtCollider");
                 hurtCollider.NotifyHit(this);
                 onHitDelivered.Invoke(this, hurtCollider);
             }
