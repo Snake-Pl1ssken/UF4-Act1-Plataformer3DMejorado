@@ -1,15 +1,25 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
 
-public class HurtCollider : MonoBehaviour
+public class HurtCollider : MonoBehaviour, IHitter
 {
+    [SerializeField] float damage = 0.25f;
+    public UnityEvent <IHitter, HurtCollider> onHitRecived;
 
-    public UnityEvent <HitCollider, HurtCollider> onHitRecived;
-
-
-    public void NotifyHit(HitCollider hitCollider)
+    public void NotifyHit(IHitter hitter)
     {
-        onHitRecived.Invoke(hitCollider, this);
+        onHitRecived.Invoke(hitter, this);
+    }
+
+    float IHitter.GetDamage()
+    {
+        return damage;
+    }
+
+    Transform IHitter.GetTransform()
+    {
+        return transform;
     }
 }

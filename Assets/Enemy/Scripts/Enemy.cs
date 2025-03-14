@@ -56,9 +56,9 @@ public class Enemy : Entity
         hurtCollider.onHitRecived.RemoveListener(OnHitRecived);
     }
 
-    private void OnHitRecived(HitCollider agressor, HurtCollider victim)
+    private void OnHitRecived(IHitter agressor, HurtCollider victim)
     {
-        if(agressor.CompareTag("Player"))
+        if(agressor.GetTransform())  //nose si funciona
         {
             Debug.Log("Muerte Enemigo");
             this.gameObject.SetActive(false);

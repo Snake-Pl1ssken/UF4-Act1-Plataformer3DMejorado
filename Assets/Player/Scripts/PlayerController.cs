@@ -160,7 +160,7 @@ public class PlayerController : Entity
         }
         //arg0 reparte arg1 recibe
     }
-    private void OnHitRecived(HitCollider hitCollider, HurtCollider hurtCollider)
+    private void OnHitRecived(IHitter hitCollider, HurtCollider hurtCollider)
     {
         Debug.Log("Hit");
         ragdollizer.RagDollizer();

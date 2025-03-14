@@ -4,10 +4,12 @@ using UnityEngine.Events;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 
-public class HitCollider : MonoBehaviour
+public class HitCollider : MonoBehaviour, IHitter
 {
     public UnityEvent<HitCollider, HurtCollider> onHitDelivered;
     [SerializeField] List<string> hittableTags;
+
+    [SerializeField] float damage = 0.25f;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -16,15 +18,11 @@ public class HitCollider : MonoBehaviour
 
     private void CheckCollider(Collider other)
     {
-        //Debug.Log(other);
-        //Debug.Log(other.tag);
         if (hittableTags.Contains(other.tag))
         {
-            //Debug.Log("hited");
             HurtCollider hurtCollider = other.GetComponent<HurtCollider>();
             if (hurtCollider)
             {
-               // Debug.Log("Has hurtCollider");
                 hurtCollider.NotifyHit(this);
                 onHitDelivered.Invoke(this, hurtCollider);
             }
@@ -35,5 +33,15 @@ public class HitCollider : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         CheckCollider(collision.collider);
+    }
+
+    float IHitter.GetDamage()
+    {
+        return damage;
+    }
+
+    Transform IHitter.GetTransform()
+    {
+        return transform;
     }
 }
