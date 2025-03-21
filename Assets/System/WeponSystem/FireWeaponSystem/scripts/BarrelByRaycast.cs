@@ -43,6 +43,9 @@ public class BarrelByRaycast : BarrelBase, IHitter
 
             shotDirection = verticalDeviation * (horizontalDeviation * shotDirection);
 
+            Vector3 trailStartPoint = transform.position;
+            Vector3 trailEndPoint = transform.position + (shotDirection * range);
+
             if (Physics.Raycast(
                 transform.position,
                 shotDirection,
@@ -52,7 +55,9 @@ public class BarrelByRaycast : BarrelBase, IHitter
             { 
                 HurtCollider hurtCollider = hit.collider.GetComponent<HurtCollider>();
                 hurtCollider?.NotifyHit(this);
+                trailEndPoint = hit.point;
             }
+            ShotTrailManager.SpawnShotTrail(trailStartPoint, trailEndPoint);
         }
     }
 

@@ -55,7 +55,7 @@ public class weapon : MonoBehaviour
         }
     }
 
-    void StartShooting()
+    public void StartShooting()
     {
         foreach (BarrelBase barrel in allBarrels)
         {
@@ -63,7 +63,7 @@ public class weapon : MonoBehaviour
         }
     }
 
-    void StopShooting()
+    public void StopShooting()
     {
         foreach (BarrelBase barrel in allBarrels)
         {
