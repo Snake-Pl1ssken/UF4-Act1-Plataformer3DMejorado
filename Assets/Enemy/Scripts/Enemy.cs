@@ -1,30 +1,57 @@
+using System;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class Enemy : Entity
 {
-    [SerializeField] float wanderinfRadius = 5f;
-    [SerializeField] float reachingDistance = 1.5f;
+    [SerializeField] float detectionDistance = 20f;
+    [SerializeField] float shootingDistance = 10f;
 
-    [SerializeField] float detectionDistance = 3f;
+    //[SerializeField] float detectionDistance = 3f;
 
     NavMeshAgent agent;
-    
+    WeaponManager weaponManager;
+    Orientator orientator;
     Vector3 homeOrigin;
     Vector3 wanderPosition;
 
+    //enum State
+    //{ 
+    //    Wandering,
+    //    Chasing,
+    //}
+
+    //State state;
+
     HurtCollider hurtCollider;
+    Sight sight;
+    BaseState[] allState;
+
+    [Header("estados")]
+    [SerializeField] BaseState chasingState;
+    [SerializeField] BaseState notChasingState;
+    [SerializeField] BaseState shootingState;
+
+    BaseState currentState;
 
     protected override void Awake()
     {
-        base.Awake();
         hurtCollider = GetComponent<HurtCollider>();
         
         agent = GetComponent<NavMeshAgent>();
-        
-        homeOrigin = transform.position;
-        SelectWanderPosition();
+
+        allState = GetComponents<BaseState>();
+
+        weaponManager = GetComponentInChildren<WeaponManager>();
+
+        sight = GetComponentInChildren<Sight>();
+        orientator = GetComponent<Orientator>();
+        foreach (BaseState s in allState)
+        {
+            s.Init(this);
+        }
+
     }
 
     private void OnEnable()
@@ -32,23 +59,60 @@ public class Enemy : Entity
         hurtCollider.onHitRecived.AddListener(OnHitRecived);
     }
 
+    private void Start()
+    {
+        //ChangeState(wanderingState);
+    }
+
+
+    Transform target;
     private void Update()
     {
         Vector3 playerPosition = PlayerController.instance.transform.position;
+        target = CheckSenses();
+        //ejecutar sentidos
 
-        if (PlayerController.instance.gameObject.activeSelf && 
-            (Vector3.Distance(playerPosition, transform.position) < detectionDistance))
+
+        //Toma de decisiones
+        if (target == null)
         {
-            agent.SetDestination(playerPosition);
+            ChangeState(notChasingState);
         }
-        else 
+        else if (TargetIsInRange())
         {
-            agent.SetDestination(wanderPosition);
-            if (Vector3.Distance(transform.position, wanderPosition) < reachingDistance)
-            { SelectWanderPosition(); }
+            ChangeState(shootingState);
         }
+        else
+        {
+            ChangeState(chasingState);
+        }
+
+        //Ejecucion de estados
 
         UpdateAnimation();
+    }
+
+    void ChangeState(BaseState newState)
+    {
+        if (currentState != newState)
+        {
+            if (currentState != null) { currentState.enabled = false; }
+            currentState = newState;
+            if (currentState != null) { currentState.enabled = true; } 
+            
+        }
+    }
+
+    private Transform CheckSenses()
+    {
+        ITargeteable targeteable = sight.GetClosestTarget();
+        return (targeteable != null) ? targeteable.GetTransform() : null;
+    }
+
+    bool TargetIsInRange()
+    {
+        return (target != null) &&
+            (Vector3.Distance(target.position, transform.position) < shootingDistance);
     }
 
     private void OnDisable()
@@ -65,12 +129,8 @@ public class Enemy : Entity
         }
     }
 
-    private void SelectWanderPosition()
-    {
-        Vector2 positionXY = Random.insideUnitCircle * wanderinfRadius;
-        Vector3 positionXZ = new Vector3(positionXY.x, 0f, positionXY.y);
-        wanderPosition = homeOrigin + positionXZ;
-    }
+    #region Entity implementation
+
 
     protected override float GetCurrentVerticalSpeed()
     {
@@ -96,4 +156,26 @@ public class Enemy : Entity
     {
         return agent.velocity.normalized;
     }
+
+    #endregion
+
+
+    #region AI Getters
+    internal NavMeshAgent GetAgent()
+    { 
+        return agent;
+    }
+
+    internal Transform GetTarget()
+    {
+        return target;
+    }
+
+    internal WeaponManager GetWeaponManager() { return weaponManager; }
+
+    internal Orientator GetOrientator()
+    {
+        return orientator;
+    }
+    #endregion
 }

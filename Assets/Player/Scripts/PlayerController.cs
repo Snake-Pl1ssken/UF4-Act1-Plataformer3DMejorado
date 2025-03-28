@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
-public class PlayerController : Entity
+public class PlayerController : Entity, ITargeteable
 {
     public static PlayerController instance;
 
@@ -42,6 +42,8 @@ public class PlayerController : Entity
 
     HitCollider hitCollider;
 
+    Orientator orientator;
+
 
     float speed;
 
@@ -59,6 +61,9 @@ public class PlayerController : Entity
         ragdollizer = GetComponentInChildren<Ragdollizer>();
 
         speed = speedWalk;
+
+        orientator = GetComponent<Orientator>();
+        orientator.SetAngularSpeed(angularSpeed);
     }
     private void OnEnable()
     {
@@ -142,12 +147,7 @@ public class PlayerController : Entity
         }
         desiredDirection.y = 0f;
 
-        float angleToApply = angularSpeed * Time.deltaTime;
-        // Distancia angular entre transform.forward y desiredDirection
-        float angularDistance = Vector3.SignedAngle(transform.forward, desiredDirection, Vector3.up);
-        float realAngleToApply = Mathf.Sign(angularDistance) * Mathf.Min(angleToApply, Mathf.Abs(angularDistance));
-        Quaternion rotationToApply = Quaternion.AngleAxis(realAngleToApply, Vector3.up);
-        transform.rotation = rotationToApply * transform.rotation;
+        orientator.OrientateTo(desiredDirection);
     }
 
     private void OnHitDelivered(HitCollider agressor, HurtCollider victim)
@@ -234,5 +234,15 @@ public class PlayerController : Entity
     protected override Vector3 GetLastNormalizedVelocity()
     {
         return lastNormalizedVelocity;
+    }
+
+    public ITargeteable.Faction GetFaction()
+    {
+        return  ITargeteable.Faction.Player;
+    }
+
+    public Transform GetTransform()
+    {
+        return transform;
     }
 }
