@@ -20,11 +20,11 @@ public class State_Shooting : BaseState
     protected override void Update()
     {
         base.Update();
+
         Vector3 desiredDirection = enemy.GetTarget().position - transform.position;
         desiredDirection.y = 0f;
 
         enemy.GetOrientator().OrientateTo(desiredDirection);
-        //Todo orientarse todo el rato hacia el target
     }
 
     protected override void OnDisable()

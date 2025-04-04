@@ -2,12 +2,10 @@ using UnityEngine;
 
 public class weapon : MonoBehaviour
 {
-
     public enum WeaponType
     { 
         ShotByShot,
         ContinuoShot,
-
     }
 
     [SerializeField] public WeaponType weapontype;

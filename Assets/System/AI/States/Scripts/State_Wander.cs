@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class State_Wander : BaseState
 {
-    [SerializeField] float wanderinfRadius = 5f;
+    [SerializeField] float wanderingRadius = 5f;
     [SerializeField] float reachingDistance = 1.5f;
 
     Vector3 homeOrigin;
@@ -26,7 +26,7 @@ public class State_Wander : BaseState
 
     private void SelectWanderPosition()
     {
-        Vector2 positionXY = Random.insideUnitCircle * wanderinfRadius;
+        Vector2 positionXY = Random.insideUnitCircle * wanderingRadius;
         Vector3 positionXZ = new Vector3(positionXY.x, 0f, positionXY.y);
         wanderPosition = homeOrigin + positionXZ;
     }

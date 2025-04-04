@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class Sight : MonoBehaviour
 {
@@ -10,11 +11,19 @@ public class Sight : MonoBehaviour
 
     [SerializeField] LayerMask visibleLayerMask = Physics.DefaultRaycastLayers;
     [SerializeField] LayerMask occludingLayerMask = Physics.DefaultRaycastLayers;
+
     public List<ITargeteable> targeteables = new();
+    ITargeteable parentTargeteable;
+
+    private void Awake()
+    {
+        parentTargeteable = GetComponent<ITargeteable>();
+    }
+
     private void Update()
     {
         Collider[] colliders = Physics.OverlapBox(
-            transform.position + (transform.forward * range / 2f), 
+            transform.position + (transform.forward * (range / 2f)), 
             (Vector3.forward * (range / 2f)) + 
             (Vector3.right * (width / 2f)) +
             (Vector3.up * (height / 2f)),
@@ -25,21 +34,45 @@ public class Sight : MonoBehaviour
 
         foreach (Collider c in colliders)
         {
-            bool hasLineOfSight = false;
+            
             ITargeteable targeteable = c.GetComponent<ITargeteable>();
             if (targeteable != null)
             {
-                if (Physics.Raycast(transform.position, c.transform.position, out RaycastHit hit, range, occludingLayerMask))
-                {
-                    hasLineOfSight = hit.collider == c;
+                if (IsVisibleBecauseFaction(targeteable))
+                { 
+                    bool hasLineOfSight = true;
+                    if (Physics.Raycast(transform.position, c.transform.position, out RaycastHit hit, range, occludingLayerMask))
+                    {
+                        hasLineOfSight = hit.collider == c;
+                    }
+                    if (hasLineOfSight) { targeteables.Add(targeteable); }                
                 }
-                if (hasLineOfSight) { targeteables.Add(targeteable); }
+
             }
         }
 
         //todo:ordenar por distancia
 
         
+    }
+
+    private bool IsVisibleBecauseFaction(ITargeteable targeteable)
+    {
+        bool isVisibleBecauseFaction = false;
+        switch (parentTargeteable.GetFaction())
+        {
+            case ITargeteable.Faction.Player:
+                break;
+
+            case ITargeteable.Faction.Enemy:
+                isVisibleBecauseFaction = targeteable.GetFaction() == ITargeteable.Faction.Enemy;
+                break;
+
+            case ITargeteable.Faction.Ally:
+                isVisibleBecauseFaction = targeteable.GetFaction() == ITargeteable.Faction.Enemy;
+                break;
+        }
+        return isVisibleBecauseFaction;
     }
 
     public ITargeteable GetClosestTarget()

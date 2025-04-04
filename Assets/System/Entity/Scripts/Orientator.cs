@@ -16,6 +16,6 @@ public class Orientator : MonoBehaviour
         float angularDistance = Vector3.SignedAngle(transform.forward, desiredDirection, Vector3.up);
         float realAngleToApply = Mathf.Sign(angularDistance) * Mathf.Min(angleToApply, Mathf.Abs(angularDistance));
         Quaternion rotationToApply = Quaternion.AngleAxis(realAngleToApply, Vector3.up);
-        transform.rotation = rotationToApply* transform.rotation;
+        transform.rotation = rotationToApply * transform.rotation;
     }
 }

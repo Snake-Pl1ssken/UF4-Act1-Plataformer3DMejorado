@@ -6,12 +6,44 @@ public abstract class Entity : MonoBehaviour
     [SerializeField] float animationSmoothingSpeed = 10f;
     Animator animator;
 
+    HurtCollider hurtCollider;
+    Ragdollizer ragdollizer;
     virtual protected void Awake()
     {
         animator = GetComponentInChildren<Animator>();
         animator.keepAnimatorStateOnDisable = true;
+
+        hurtCollider = GetComponent<HurtCollider>();
+        ragdollizer = GetComponentInChildren<Ragdollizer>();
     }
 
+    virtual protected void OnEnable()
+    {
+        hurtCollider.onHitRecived.AddListener(OnHitRecived);
+    }
+
+    virtual protected void OnDisable()
+    {
+        hurtCollider.onHitRecived.RemoveListener(OnHitRecived);
+    }
+    private void OnHitRecived(IHitter hitCollider, HurtCollider hurtCollider)
+    {
+        Debug.Log("Hit");
+        ragdollizer.RagDollizer();
+        Invoke(nameof(Deactivate), 2f);
+        Invoke(nameof(Resurrect), 3f);
+    }
+
+    private void Deactivate()
+    {
+        gameObject.SetActive(false);
+        ragdollizer.DeRagdollizer();
+    }
+
+    void Resurrect()
+    {
+        gameObject.SetActive(true);
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

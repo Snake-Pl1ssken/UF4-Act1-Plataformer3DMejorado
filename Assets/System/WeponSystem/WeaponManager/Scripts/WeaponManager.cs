@@ -12,8 +12,6 @@ public class WeaponManager : MonoBehaviour
     [SerializeField] bool debugStartShooting;
     [SerializeField] bool debugStopShooting;
 
-    weapon[] weapons;
-    int currentWeaponIndex = -1;
 
     private void OnValidate()
     {
@@ -44,6 +42,8 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
+    weapon[] weapons;
+    int currentWeaponIndex = -1;
     private void Awake()
     {
         weapons = GetComponentsInChildren<weapon>();

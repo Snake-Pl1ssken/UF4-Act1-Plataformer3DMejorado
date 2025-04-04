@@ -2,19 +2,25 @@ using System;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.InputSystem.LowLevel;
 
-public class Enemy : Entity
+public class Enemy : Entity, ITargeteable
 {
-    [SerializeField] float detectionDistance = 20f;
     [SerializeField] float shootingDistance = 10f;
+    [SerializeField] DecisionTreeNode decissionTreeRoot;
 
-    //[SerializeField] float detectionDistance = 3f;
 
     NavMeshAgent agent;
     WeaponManager weaponManager;
     Orientator orientator;
-    Vector3 homeOrigin;
-    Vector3 wanderPosition;
+    Sight sight;
+
+    BaseState[] allState;
+
+    BaseState currentState;
+
+    DecisionTreeNode[] allDecisionTreeNode;
+
 
     //enum State
     //{ 
@@ -25,33 +31,36 @@ public class Enemy : Entity
     //State state;
 
     HurtCollider hurtCollider;
-    Sight sight;
-    BaseState[] allState;
 
     [Header("estados")]
     [SerializeField] BaseState chasingState;
     [SerializeField] BaseState notChasingState;
     [SerializeField] BaseState shootingState;
 
-    BaseState currentState;
+
 
     protected override void Awake()
     {
-        hurtCollider = GetComponent<HurtCollider>();
-        
+        base.Awake();
         agent = GetComponent<NavMeshAgent>();
 
+        hurtCollider = GetComponent<HurtCollider>();
         allState = GetComponents<BaseState>();
-
-        weaponManager = GetComponentInChildren<WeaponManager>();
-
-        sight = GetComponentInChildren<Sight>();
-        orientator = GetComponent<Orientator>();
         foreach (BaseState s in allState)
         {
             s.Init(this);
         }
 
+        weaponManager = GetComponentInChildren<WeaponManager>();
+
+        orientator = GetComponent<Orientator>();
+        sight = GetComponentInChildren<Sight>();
+
+        allDecisionTreeNode = GetComponentsInChildren<DecisionTreeNode>();
+        foreach (DecisionTreeNode node in allDecisionTreeNode)
+        {
+            node.SetEnemy(this);
+        }
     }
 
     private void OnEnable()
@@ -62,58 +71,32 @@ public class Enemy : Entity
     private void Start()
     {
         //ChangeState(wanderingState);
+        decissionTreeRoot.Execute();
     }
 
 
     Transform target;
     private void Update()
     {
-        Vector3 playerPosition = PlayerController.instance.transform.position;
+        //Vector3 playerPosition = PlayerController.instance.transform.position;
         target = CheckSenses();
-        //ejecutar sentidos
-
-
-        //Toma de decisiones
-        if (target == null)
-        {
-            ChangeState(notChasingState);
-        }
-        else if (TargetIsInRange())
-        {
-            ChangeState(shootingState);
-        }
-        else
-        {
-            ChangeState(chasingState);
-        }
-
-        //Ejecucion de estados
-
+        decissionTreeRoot.Execute();
         UpdateAnimation();
     }
 
-    void ChangeState(BaseState newState)
-    {
-        if (currentState != newState)
-        {
-            if (currentState != null) { currentState.enabled = false; }
-            currentState = newState;
-            if (currentState != null) { currentState.enabled = true; } 
-            
-        }
-    }
+
 
     private Transform CheckSenses()
     {
         ITargeteable targeteable = sight.GetClosestTarget();
+        if(targeteable != null)
+        {
+            hasAlreadyVisitedTheLastTargetPosition = false;
+            lastTargetPosition = targeteable.GetTransform().position;
+        }
         return (targeteable != null) ? targeteable.GetTransform() : null;
     }
 
-    bool TargetIsInRange()
-    {
-        return (target != null) &&
-            (Vector3.Distance(target.position, transform.position) < shootingDistance);
-    }
 
     private void OnDisable()
     {
@@ -177,5 +160,53 @@ public class Enemy : Entity
     {
         return orientator;
     }
+
+    internal void ChangeStateTo(BaseState state)
+    {
+        if (currentState != state)
+        {
+            if (currentState != null) { currentState.enabled = false; }
+            currentState = state;
+            if (currentState != null) { currentState.enabled = true; }
+
+        }
+    }
+
+    internal bool HasTarget()
+    {
+        return target != null;
+    }
+    public bool TargetIsInRange()
+    {
+        return (target != null) &&
+            (Vector3.Distance(target.position, transform.position) < shootingDistance);
+    }
+
+    Vector3 lastTargetPosition;
+    bool hasAlreadyVisitedTheLastTargetPosition = true;
+    internal bool HasAlreadyVisitedTheLastTargetPosition()
+    {
+        return hasAlreadyVisitedTheLastTargetPosition;
+    }
+
+    internal Vector3 GetLastTargetPosition()
+    {
+        return lastTargetPosition;
+    }
+
+    internal void NotifyLastTargetPositionReached()
+    {
+        hasAlreadyVisitedTheLastTargetPosition = false;
+    }
+
+
     #endregion
+
+    [SerializeField] ITargeteable.Faction faction = ITargeteable.Faction.Enemy;
+
+    public ITargeteable.Faction GetFaction()
+    {
+        return faction;
+    }
+    public Transform GetTransform() { return transform; }
 }

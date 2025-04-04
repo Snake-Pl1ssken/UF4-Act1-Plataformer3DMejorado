@@ -37,8 +37,7 @@ public class PlayerController : Entity, ITargeteable
 
     Camera mainCamera;
 
-    HurtCollider hurtCollider;
-    Ragdollizer ragdollizer;
+
 
     HitCollider hitCollider;
 
@@ -57,16 +56,17 @@ public class PlayerController : Entity, ITargeteable
         mainCamera = Camera.main;
 
         hitCollider = GetComponentInChildren<HitCollider>();
-        hurtCollider = GetComponent<HurtCollider>();
-        ragdollizer = GetComponentInChildren<Ragdollizer>();
+
 
         speed = speedWalk;
 
         orientator = GetComponent<Orientator>();
         orientator.SetAngularSpeed(angularSpeed);
     }
-    private void OnEnable()
+    protected override void OnEnable()
     {
+        base.OnEnable();
+
         move.action.Enable();
         jump.action.Enable();
         run.action.Enable();
@@ -80,7 +80,7 @@ public class PlayerController : Entity, ITargeteable
         run.action.started += OnRun;
         run.action.canceled += OnRun;
 
-        hurtCollider.onHitRecived.AddListener(OnHitRecived);
+
         hitCollider.onHitDelivered.AddListener(OnHitDelivered);
     }
 
@@ -160,24 +160,7 @@ public class PlayerController : Entity, ITargeteable
         }
         //arg0 reparte arg1 recibe
     }
-    private void OnHitRecived(IHitter hitCollider, HurtCollider hurtCollider)
-    {
-        Debug.Log("Hit");
-        ragdollizer.RagDollizer();
-        Invoke(nameof(Deactivate), 2f);
-        Invoke(nameof(Resurrect), 3f);
-    }
 
-    private void Deactivate()
-    {
-        gameObject.SetActive(false);
-        ragdollizer.DeRagdollizer();
-    }
-
-    void Resurrect()
-    {
-        gameObject.SetActive(true);
-    }
 
     Vector3 rawMove = Vector3.zero;
 
@@ -195,8 +178,10 @@ public class PlayerController : Entity, ITargeteable
     {
         speed = run.action.IsPressed() ? speedRun : speedWalk;
     }
-    private void OnDisable()
+    protected override void OnDisable()
     {
+        base.OnDisable();
+
         move.action.Disable();
         jump.action.Disable();
         run.action.Disable();
@@ -210,7 +195,7 @@ public class PlayerController : Entity, ITargeteable
 
         jump.action.performed -= OnJump;
 
-        hurtCollider.onHitRecived.RemoveListener(OnHitRecived);
+
         hitCollider.onHitDelivered.RemoveListener(OnHitDelivered);
     }
 
