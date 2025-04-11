@@ -41,6 +41,8 @@ public class PlayerWeaponManager : MonoBehaviour
         UpdateShooting();
         SelectWeaponByNumber();
         SelectWeaponCycle();
+        //Debug.Log();
+
     }
 
     private void UpdateShooting()
@@ -74,7 +76,7 @@ public class PlayerWeaponManager : MonoBehaviour
     private void SelectWeaponByNumber()
     {
         int weaponToSelect = -2;
-
+        //Debug.Log(weaponToSelect);
         //Seleccion del weapon to select segun tecla
         if (weapon1.action.WasPressedThisFrame())
         {

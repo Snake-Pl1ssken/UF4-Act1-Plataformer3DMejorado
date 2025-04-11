@@ -58,6 +58,11 @@ public class WeaponManager : MonoBehaviour
         SelectWeapon(initialWeaponToselect);
     }
 
+    private void Update()
+    {
+        Debug.Log(HasSelectedWeapon());
+    }
+
     public void SelectWeapon(int WeaponIndex)
     {
         if (WeaponIndex < -1)
