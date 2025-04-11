@@ -17,7 +17,7 @@ public class Sight : MonoBehaviour
 
     private void Awake()
     {
-        parentTargeteable = GetComponent<ITargeteable>();
+        parentTargeteable = GetComponentInParent<ITargeteable>();
     }
 
     private void Update()
@@ -65,7 +65,7 @@ public class Sight : MonoBehaviour
                 break;
 
             case ITargeteable.Faction.Enemy:
-                isVisibleBecauseFaction = targeteable.GetFaction() == ITargeteable.Faction.Enemy;
+                isVisibleBecauseFaction = targeteable.GetFaction() != ITargeteable.Faction.Enemy;
                 break;
 
             case ITargeteable.Faction.Ally:
@@ -76,7 +76,8 @@ public class Sight : MonoBehaviour
     }
 
     public ITargeteable GetClosestTarget()
-    { 
+    {
+        Debug.Log((targeteables.Count > 0) ? targeteables[0] : null);
         return (targeteables.Count > 0) ? targeteables[0] : null;
     }
 }
