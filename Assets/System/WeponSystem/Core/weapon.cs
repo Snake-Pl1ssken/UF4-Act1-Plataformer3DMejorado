@@ -10,6 +10,8 @@ public class weapon : MonoBehaviour
 
     [SerializeField] public WeaponType weapontype;
 
+    [SerializeField] public Transform grabPointsParent;
+
     [Header("Debug")]
     public bool debugShot;
     public bool debugStartShooting;
