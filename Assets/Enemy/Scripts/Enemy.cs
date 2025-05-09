@@ -49,6 +49,7 @@ public class Enemy : Entity, ITargeteable
         foreach (BaseState s in allState)
         {
             s.Init(this);
+            s.enabled = false;
         }
 
         weaponManager = GetComponentInChildren<WeaponManager>();
@@ -186,6 +187,7 @@ public class Enemy : Entity, ITargeteable
     bool hasAlreadyVisitedTheLastTargetPosition = true;
     internal bool HasAlreadyVisitedTheLastTargetPosition()
     {
+        Debug.Log($"hasAlreadyVisitedTheLastTargetPosition - {hasAlreadyVisitedTheLastTargetPosition}");
         return hasAlreadyVisitedTheLastTargetPosition;
     }
 
@@ -196,7 +198,7 @@ public class Enemy : Entity, ITargeteable
 
     internal void NotifyLastTargetPositionReached()
     {
-        hasAlreadyVisitedTheLastTargetPosition = false;
+        hasAlreadyVisitedTheLastTargetPosition = true;
     }
 
 

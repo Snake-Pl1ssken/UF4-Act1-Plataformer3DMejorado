@@ -6,6 +6,7 @@ public class DecisionTreeNode_SetState : DecisionTreeNode
 
     public override void Execute()
     {
+        Debug.Log($"SetState {state}");
         enemy.ChangeStateTo(state);
     }
 
