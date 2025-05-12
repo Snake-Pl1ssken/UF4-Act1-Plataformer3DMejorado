@@ -160,7 +160,7 @@ MonoBehaviour:
   lifeTime: 3
   resultsPrefab:
   - {fileID: 0}
-  destroyOnCollision: 0
+  destroyOnCollision: 1
   instantiateResultsOnColision: 0
   instantiateResultsOnLifeTimeEnd: 1
 --- !u!54 &3911224501288821483

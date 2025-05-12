@@ -34,18 +34,21 @@ public class Sight : MonoBehaviour
 
         foreach (Collider c in colliders)
         {
-            
+
             ITargeteable targeteable = c.GetComponent<ITargeteable>();
             if (targeteable != null)
             {
                 if (IsVisibleBecauseFaction(targeteable))
-                { 
+                {
                     bool hasLineOfSight = true;
                     if (Physics.Raycast(transform.position, c.transform.position, out RaycastHit hit, range, occludingLayerMask))
                     {
                         hasLineOfSight = hit.collider == c;
                     }
-                    if (hasLineOfSight) { targeteables.Add(targeteable); }                
+                    if (hasLineOfSight) 
+                    {
+                        targeteables.Add(targeteable); 
+                    }                
                 }
 
             }
